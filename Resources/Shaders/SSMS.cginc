@@ -45,9 +45,11 @@ half _Intensity;
 sampler2D _CameraDepthTexture;
 sampler2D _FadeTex;
 sampler2D _FogTex;
+sampler2D _ParticlesTex;
 float _Radius;
 half4 _BlurTint;
 half _BlurWeight;
+int _ParticlesEnabled;
 
 // Brightness function
 half Brightness(half3 c)
@@ -243,7 +245,12 @@ half4 frag_prefilter(v2f_img i) : SV_Target
     // half depth = tex2D(_FogTex, float2(i.uv.x, 1 - i.uv.y)); // Forward
    	depth = AdjustDepth(depth);
 
-    return EncodeHDR(m * depth) * _BlurTint;
+    half particles = 0;
+   	if (_ParticlesEnabled == 1) {
+    	particles = tex2D(_ParticlesTex, i.uv);
+    }
+
+    return EncodeHDR(m * saturate(depth + particles)) * _BlurTint;
 }
 
 half4 frag_downsample1(v2f_img i) : SV_Target
@@ -281,5 +288,10 @@ half4 frag_upsample_final(v2f_multitex i) : SV_Target
     // half depth = tex2D(_FogTex, float2(i.uvBase.x, 1 - i.uvBase.y)); // Forward
     depth = AdjustDepth(depth);
 
-    return lerp(base, half4(blur,1) * (1 / _Radius), clamp(depth ,0,_Intensity)) ;
+    half particles = 0;
+    if (_ParticlesEnabled == 1) {
+    	particles = tex2D(_ParticlesTex, i.uvBase);
+    }
+
+    return lerp(base, half4(blur,1) * (1 / _Radius), clamp(depth + particles, 0, _Intensity));
 }

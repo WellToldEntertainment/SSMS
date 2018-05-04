@@ -73,12 +73,18 @@ namespace SSMS
 			}
 
 			DestroyImmediate (fogMaterial);
-		}
+
+            fogMaterial = null;
+
+        }
 
 		[ImageEffectOpaque]
 		void OnRenderImage(RenderTexture source, RenderTexture destination)
-		{	
-			// Global fog settings
+		{
+            // Global fog settings
+
+            if (!fogMaterial)
+                return;
 
 			if (setGlobalSettings) {
 				if (fogStart < 0) { fogStart = 0; }

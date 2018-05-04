@@ -189,8 +189,12 @@ namespace SSMS
         void OnEnable()
         {
             var shader = _shader ? _shader : Shader.Find("Hidden/SSMS");
-            _material = new Material(shader);
-            _material.hideFlags = HideFlags.DontSave;
+
+            if (_material == null)
+            {
+                _material = new Material(shader);
+                _material.hideFlags = HideFlags.DontSave;
+            }
 
 			// SMSS
 			if (fadeRamp == null) {
@@ -202,11 +206,16 @@ namespace SSMS
         void OnDisable()
         {
             DestroyImmediate(_material);
+
+            _material = null;
         }
 
 		// [ImageEffectOpaque]
         void OnRenderImage(RenderTexture source, RenderTexture destination)
         {
+            if (!_material)
+                return;
+
             var useRGBM = Application.isMobilePlatform;
 
             // source texture size
